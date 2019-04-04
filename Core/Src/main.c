@@ -22,6 +22,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "crc.h"
+#include "dma.h"
 #include "eth.h"
 #include "gfxsimulator.h"
 #include "i2c.h"
@@ -124,6 +125,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_CRC_Init();
   MX_I2C2_Init();
   MX_USART3_UART_Init();
@@ -136,11 +138,11 @@ int main(void)
   uwCRCValue = HAL_CRC_Calculate(&hcrc, (uint32_t *)aDataBuffer, BUFFER_SIZE);
   if (uwCRCValue == uwExpectedCRCValue){
       printf("\n\rCRC is OK\n\r");
-      printf("%#010X\n", uwCRCValue);
+      printf("%lx\n", uwCRCValue);
   }
   else{
       printf("\n\rFAIL\n\r");
-      printf("%#010X\n", uwCRCValue);
+      printf("%lx\n", uwCRCValue);
   }
 
   /* USER CODE END 2 */
@@ -263,7 +265,11 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+    HAL_GPIO_WritePin (GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
 
+    while (1)
+    {
+    }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -278,8 +284,7 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+      printf("Wrong parameters value: file %s on line %d\r\n", file, line);
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
