@@ -20,19 +20,19 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 #include "crc.h"
-#include "dma.h"
 #include "eth.h"
-#include "gfxsimulator.h"
 #include "i2c.h"
+#include "tim.h"
 #include "usart.h"
 #include "wwdg.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include "stm32f7xx_hal.h"
+#include <stm32f767xx.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -81,7 +81,6 @@ uint32_t uwExpectedCRCValue = 0x379E9F06;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 #ifdef __GNUC__
@@ -89,6 +88,8 @@ void MX_FREERTOS_Init(void);
 #else
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
+
+#define __HAL_USART_GET_FLAG(__HANDLE__, __FLAG__) (((__HANDLE__)->ISR & (__FLAG__)) == (__FLAG__))
 
 /* USER CODE END PFP */
 
@@ -106,6 +107,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
+  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -125,14 +127,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_CRC_Init();
   MX_I2C2_Init();
   MX_USART3_UART_Init();
   MX_WWDG_Init();
   MX_ETH_Init();
-  MX_GFXSIMULATOR_Init();
+  MX_TIM6_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start(&htim6);
+  HAL_TIM_Base_Start_IT(&htim6);
+  HAL_TIM_Base_Start_IT(&htim7);
 
   printf("\n\rRUN \n\r");
   uwCRCValue = HAL_CRC_Calculate(&hcrc, (uint32_t *)aDataBuffer, BUFFER_SIZE);
@@ -145,15 +150,13 @@ int main(void)
       printf("%lx\n", uwCRCValue);
   }
 
-  /* USER CODE END 2 */
-
-  /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
-
-  /* Start scheduler */
-  osKernelStart();
+  setCurrentWaitTime(&huart3);
+  printf("Wait time = %d\n\r", currentWaitTime);
   
-  /* We should never get here as control is now taken by the scheduler */
+  HAL_UART_Receive_IT(&huart3, &modbusBuffer, 1);
+
+  HTS221Test();
+  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -231,8 +234,16 @@ void SystemClock_Config(void)
   */
 PUTCHAR_PROTOTYPE
 {
-  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0x1);
+  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 1);
   return ch;
+}
+
+ 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle){
+    if(UartHandle->Instance == USART3) {
+        HAL_TIM_Base_Stop(&htim7);
+        HAL_TIM_Base_Start(&htim7);
+        }
 }
 /* USER CODE END 4 */
 
