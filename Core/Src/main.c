@@ -130,10 +130,10 @@ int main(void)
   MX_CRC_Init();
   MX_I2C2_Init();
   MX_USART3_UART_Init();
-  MX_WWDG_Init();
   MX_ETH_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_WWDG_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
   HAL_TIM_Base_Start_IT(&htim6);

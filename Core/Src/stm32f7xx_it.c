@@ -340,7 +340,7 @@ void TIM7_IRQHandler(void)
 void ETH_WKUP_IRQHandler(void)
 {
   /* USER CODE BEGIN ETH_WKUP_IRQn 0 */
-
+    HAL_WWDG_Refresh(&heth);
   /* USER CODE END ETH_WKUP_IRQn 0 */
   HAL_ETH_IRQHandler(&heth);
   /* USER CODE BEGIN ETH_WKUP_IRQn 1 */

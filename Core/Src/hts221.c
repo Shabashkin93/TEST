@@ -96,11 +96,11 @@ HTS221_Error_et HTS221_Get_Temperature(float *value)
 //tmp = HTS221_ReadReg(HTS221_T0_T1_DEGC_H2);
 //printf("res2 = %x\n\r",tmp);
 /*Calculate the T0_degC and T1_degC values*/
- T0_degC_x8_u16 = (((uint16_t)(HTS221_ReadReg(HTS221_T0_T1_DEGC_H2) & 0x03)) << 8) | ((uint16_t)HTS221_ReadReg(HTS221_T0_DEGC_X8));
- T1_degC_x8_u16 = (((uint16_t)(HTS221_ReadReg(HTS221_T0_T1_DEGC_H2) & 0x0C)) << 6) | ((uint16_t)HTS221_ReadReg(HTS221_T0_DEGC_X8+1));
+ T0_degC_x8_u16 = (((uint16_t)(HTS221_ReadReg(HTS221_T0_DEGC_X8) & 0x03)) << 8) | ((uint16_t)HTS221_ReadReg(HTS221_T0_T1_DEGC_H2));
+ T1_degC_x8_u16 = (((uint16_t)(HTS221_ReadReg(HTS221_T0_DEGC_X8+1) & 0x0C)) << 6) | ((uint16_t)HTS221_ReadReg(HTS221_T0_T1_DEGC_H2));
  T0_degC = T0_degC_x8_u16>>3;
  T1_degC = T1_degC_x8_u16>>3;
- printf("res3 = %d %d\n\r",T0_degC, T1_degC);
+// printf("res3 = %d %d\n\r",T0_degC, T1_degC);
 ///*3. Read from 0x3C & 0x3D registers the value of T0_OUT*/
 ///*4. Read from 0x3E & 0x3F registers the value of T1_OUT*/
 // buffer1[0]=HTS221_ReadReg(HTS221_T0_OUT_L);
@@ -110,14 +110,14 @@ HTS221_Error_et HTS221_Get_Temperature(float *value)
 //printf("res4 = %x\n\r",buffer1);
  T0_out = (((uint16_t)HTS221_ReadReg(HTS221_T0_OUT_L+1))<<8) | (uint16_t)HTS221_ReadReg(HTS221_T0_OUT_L);
  T1_out = ((HTS221_ReadReg(HTS221_T0_OUT_L+3))<<8) | HTS221_ReadReg(HTS221_T0_OUT_L+2);
- printf("res5 = %d %d\n\r",T0_out, T1_out);
+// printf("res5 = %d %d\n\r",T0_out, T1_out);
 ///* 5.Read from 0x2A & 0x2B registers the value T_OUT (ADC_OUT).*/
 // buffer2[0]=HTS221_ReadReg(HTS221_TEMP_OUT_L_REG);
 // buffer2[1]=HTS221_ReadReg(HTS221_TEMP_OUT_L_REG+1);
 T_out = (((uint16_t)HTS221_ReadReg(HTS221_TEMP_OUT_L_REG+1))<<8) | (uint16_t)HTS221_ReadReg(HTS221_TEMP_OUT_L_REG);
 /* 6. Compute the Temperature value by linear interpolation*/
  tmp32 = ((float)(T_out - T0_out)) * ((float)(T1_degC - T0_degC)*10);
- *value = tmp32 /(T1_out - T0_out) + T0_degC*10;
+ *value = (tmp32 /(T1_out - T0_out) + T0_degC*10)/10;
  return HTS221_OK;
 }
 
@@ -146,19 +146,19 @@ void HTS221Test(){
     testData.pp_od = 0;
     testData.drdy = 0;
 
-    if(HAL_I2C_IsDeviceReady (&hi2c2, HTS221_ADDRESS_READ, 1, 100) == HAL_OK){
-        printf("hts221 OK\n\r");
-      }
-    else{
-        Error_Handler();
-    }
+//    if(HAL_I2C_IsDeviceReady (&hi2c2, HTS221_ADDRESS_READ, 1, 100) == HAL_OK){
+//        printf("hts221 OK\n\r");
+//      }
+//    else{
+//        Error_Handler();
+//    }
 
 //    HTS221_ReadSetsRegister();
 //
-    if(HTS221_INIT(&testData)){
-        printf("no init\n\r");
-        Error_Handler();
-    }
+//    if(HTS221_INIT(&testData)){
+//        printf("no init\n\r");
+//        Error_Handler();
+//    }
 
     if(HTS221_Get_Temperature(&temperature)){
         printf("Error string %d\n\r",errorString);
@@ -167,9 +167,6 @@ void HTS221Test(){
     else{
         printf("Temperature = %06f\n\r",temperature);
     }
-    HTS221_ReadSetsRegister();
-    HAL_I2C_Mem_Read(&hi2c2, HTS221_ADDRESS_READ, TEMP_OUT_L, 1, &tempData, 2, 1000);
-    printf("TEMP_OUT_L = %x\n\r", *tempData);
 }
 
 /*End test*/
