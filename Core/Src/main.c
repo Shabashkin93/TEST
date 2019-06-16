@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "crc.h"
 #include "eth.h"
 #include "i2c.h"
@@ -81,6 +82,7 @@ uint32_t uwExpectedCRCValue = 0x379E9F06;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 #ifdef __GNUC__
@@ -157,6 +159,14 @@ int main(void)
 
   HTS221Test();
   /* USER CODE END 2 */
+
+  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+  
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

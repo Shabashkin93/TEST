@@ -4,10 +4,13 @@
 
 uint8_t errorString=0;
 
-static uint8_t HTS221_ReadReg(uint8_t MemAddress){
+uint8_t HTS221_ReadReg(uint8_t MemAddress){
     uint8_t res=0;
     if(HAL_I2C_Mem_Read(&hi2c2, HTS221_ADDRESS_READ, MemAddress, 1, &res, 1, 1000) == HAL_OK){
         return (res);
+    }
+    else{
+        return 0;
     }
 }
 
@@ -44,8 +47,6 @@ HAL_StatusTypeDef HTS221_SET_CTRL_REG3(uint8_t drdy_hl, uint8_t pp_od, uint8_t d
 
 HTS221_Error_et HTS221_INIT(HTS221InitData *HTS221){
     printf("I am %x\n\r", HTS221_ReadReg(WHO_AM_I));
-//    printf("AVG %x\n\r", HTS221_ReadReg(AV_CONF));
-//    HTS221_ReadSetsRegister();
     if(HTS221_SET_AVG(HTS221->avgt,HTS221->avgh)!=HAL_OK){
         return HTS221_ERROR;
     }
@@ -59,13 +60,11 @@ HTS221_Error_et HTS221_INIT(HTS221InitData *HTS221){
         return HTS221_ERROR;
     }
     else{
-//        HTS221_ReadSetsRegister();
         return HTS221_OK;
     }
 }
 
 void HTS221_ReadSetsRegister(){
-    uint8_t result;
     printf("AV_CONF = %x\n\r",HTS221_ReadReg(AV_CONF));
     printf("CTRL_REG1 = %x\n\r",HTS221_ReadReg(CTRL_REG1));
     printf("CTRL_REG2 = %x\n\r",HTS221_ReadReg(CTRL_REG2));
@@ -82,10 +81,7 @@ HTS221_Error_et HTS221_Get_Temperature(float *value)
 {
  uint16_t T0_degC_x8_u16, T1_degC_x8_u16;
  int16_t T0_degC, T1_degC, T0_out, T1_out, T_out;
- uint8_t buffer[4], tmp;
  float tmp32;
- uint8_t buffer1[4];
- uint8_t buffer2[2];
 /*1. Read from 0x32 & 0x33 registers the value of coefficients T0_degC_x8 and T1_degC_x8*/
 // if(HTS221_ReadReg(HTS221_T0_DEGC_X8, 2, buffer))
 // return HTS221_ERROR;
@@ -128,10 +124,6 @@ HTS221InitData testData;
 /*End variables*/
 
 void HTS221Test(){
-    uint8_t *errorPrint;
-    uint8_t tempData[2];
-    uint8_t out;
-    uint8_t in;
     float temperature;
 //    float temperature1 = 1.326545;
     testData.avgt = AVGT_256;
