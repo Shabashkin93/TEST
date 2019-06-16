@@ -108,15 +108,15 @@ typedef struct {
 }HTS221InitData;
 
 typedef enum {HTS221_OK = 0, HTS221_ERROR = 1} HTS221_Error_et;
-HTS221_Error_et HTS221_ReadReg(uint8_t MemAddress, uint8_t numByteToRead, uint8_t *data );
-HTS221_Error_et HTS221_WriteReg(uint8_t MemAddress, uint8_t NumByteToWrite, uint8_t *data );
-HTS221_Error_et HTS221_SET_AVG(uint8_t AVGT, uint8_t AVGH);
-HTS221_Error_et HTS221_SET_CTRL_REG1(uint8_t pd, uint8_t rate, uint8_t bdu);
-HTS221_Error_et HTS221_SET_CTRL_REG2(uint8_t boot, uint8_t heater, uint8_t one_shot);
-HTS221_Error_et HTS221_SET_CTRL_REG3(uint8_t drdy_hl, uint8_t pp_od, uint8_t drdy);
+static uint8_t HTS221_ReadReg(uint8_t MemAddress);
+HAL_StatusTypeDef HTS221_WriteReg(uint8_t MemAddress, uint8_t data );
+HAL_StatusTypeDef HTS221_SET_AVG(uint8_t AVGT, uint8_t AVGH);
+HAL_StatusTypeDef HTS221_SET_CTRL_REG1(uint8_t pd, uint8_t rate, uint8_t bdu);
+HAL_StatusTypeDef HTS221_SET_CTRL_REG2(uint8_t boot, uint8_t heater, uint8_t one_shot);
+HAL_StatusTypeDef HTS221_SET_CTRL_REG3(uint8_t drdy_hl, uint8_t pp_od, uint8_t drdy);
 HTS221_Error_et HTS221_INIT(HTS221InitData *HTS221);
 void HTS221Test();
 void HTS221_ReadSetsRegister();
-HTS221_Error_et HTS221_Get_Temperature(int16_t *value);
+HTS221_Error_et HTS221_Get_Temperature(float *value);
 
 #endif /* INC_HTS221_H_ */
