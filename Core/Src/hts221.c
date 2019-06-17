@@ -1,8 +1,7 @@
 #include "hts221.h"
 
-
-
-uint8_t errorString=0;
+uint8_t errorString = 0;
+uint8_t noInit = 1;
 
 uint8_t HTS221_ReadReg(uint8_t MemAddress){
     uint8_t res=0;
@@ -46,7 +45,7 @@ HAL_StatusTypeDef HTS221_SET_CTRL_REG3(uint8_t drdy_hl, uint8_t pp_od, uint8_t d
 }
 
 HTS221_Error_et HTS221_INIT(HTS221InitData *HTS221){
-    printf("I am %x\n\r", HTS221_ReadReg(WHO_AM_I));
+//    printf("I am %x\n\r", HTS221_ReadReg(WHO_AM_I));
     if(HTS221_SET_AVG(HTS221->avgt,HTS221->avgh)!=HAL_OK){
         return HTS221_ERROR;
     }
@@ -83,38 +82,50 @@ HTS221_Error_et HTS221_Get_Temperature(float *value)
  int16_t T0_degC, T1_degC, T0_out, T1_out, T_out;
  float tmp32;
 /*1. Read from 0x32 & 0x33 registers the value of coefficients T0_degC_x8 and T1_degC_x8*/
-// if(HTS221_ReadReg(HTS221_T0_DEGC_X8, 2, buffer))
-// return HTS221_ERROR;
-// buffer[0]=HTS221_ReadReg(HTS221_T0_DEGC_X8);
-// buffer[1]=HTS221_ReadReg(HTS221_T0_DEGC_X8+1);
-// printf("res1 = %x\n\r",buffer);
 /*2. Read from 0x35 register the value of the MSB bits of T1_degC and T0_degC */
-//tmp = HTS221_ReadReg(HTS221_T0_T1_DEGC_H2);
-//printf("res2 = %x\n\r",tmp);
 /*Calculate the T0_degC and T1_degC values*/
  T0_degC_x8_u16 = (((uint16_t)(HTS221_ReadReg(HTS221_T0_DEGC_X8) & 0x03)) << 8) | ((uint16_t)HTS221_ReadReg(HTS221_T0_T1_DEGC_H2));
  T1_degC_x8_u16 = (((uint16_t)(HTS221_ReadReg(HTS221_T0_DEGC_X8+1) & 0x0C)) << 6) | ((uint16_t)HTS221_ReadReg(HTS221_T0_T1_DEGC_H2));
  T0_degC = T0_degC_x8_u16>>3;
  T1_degC = T1_degC_x8_u16>>3;
-// printf("res3 = %d %d\n\r",T0_degC, T1_degC);
 ///*3. Read from 0x3C & 0x3D registers the value of T0_OUT*/
 ///*4. Read from 0x3E & 0x3F registers the value of T1_OUT*/
-// buffer1[0]=HTS221_ReadReg(HTS221_T0_OUT_L);
-// buffer1[1]=HTS221_ReadReg(HTS221_T0_OUT_L+1);
-// buffer1[2]=HTS221_ReadReg(HTS221_T0_OUT_L+2);
-// buffer1[3]=HTS221_ReadReg(HTS221_T0_OUT_L+3);
-//printf("res4 = %x\n\r",buffer1);
  T0_out = (((uint16_t)HTS221_ReadReg(HTS221_T0_OUT_L+1))<<8) | (uint16_t)HTS221_ReadReg(HTS221_T0_OUT_L);
  T1_out = ((HTS221_ReadReg(HTS221_T0_OUT_L+3))<<8) | HTS221_ReadReg(HTS221_T0_OUT_L+2);
-// printf("res5 = %d %d\n\r",T0_out, T1_out);
 ///* 5.Read from 0x2A & 0x2B registers the value T_OUT (ADC_OUT).*/
-// buffer2[0]=HTS221_ReadReg(HTS221_TEMP_OUT_L_REG);
-// buffer2[1]=HTS221_ReadReg(HTS221_TEMP_OUT_L_REG+1);
 T_out = (((uint16_t)HTS221_ReadReg(HTS221_TEMP_OUT_L_REG+1))<<8) | (uint16_t)HTS221_ReadReg(HTS221_TEMP_OUT_L_REG);
 /* 6. Compute the Temperature value by linear interpolation*/
  tmp32 = ((float)(T_out - T0_out)) * ((float)(T1_degC - T0_degC)*10);
  *value = (tmp32 /(T1_out - T0_out) + T0_degC*10)/10;
  return HTS221_OK;
+}
+
+
+/**
+* @brief Read HTS221 Humidity output registers, and calculate humidity.
+* @param Pointer to the returned humidity value that must be divided by 10 to get the value in [%].
+* @retval Error code [HTS221_OK, HTS221_ERROR].
+*/
+HTS221_Error_et HTS221_Get_Humidity(float* value)
+{
+int16_t H0_T0_out, H1_T0_out, H_T_out;
+uint16_t H0_rh, H1_rh;
+float tmp;
+/* 1. Read H0_rH and H1_rH coefficients*/
+H0_rh = HTS221_ReadReg(HTS221_H0_RH_X2)>>1;
+H1_rh = HTS221_ReadReg(HTS221_H0_RH_X2+1)>>1;
+/*2. Read H0_T0_OUT */
+H0_T0_out = ((uint16_t)(HTS221_ReadReg(HTS221_H0_T0_OUT_L+1)<<8) | (uint16_t)HTS221_ReadReg(HTS221_H0_T0_OUT_L));
+/*3. Read H1_T0_OUT */
+H1_T0_out = ((uint16_t)(HTS221_ReadReg(HTS221_H1_T0_OUT_L+1)<<8) | (uint16_t)HTS221_ReadReg(HTS221_H1_T0_OUT_L));
+/*4. Read H_T_OUT */
+H_T_out = ((uint16_t)(HTS221_ReadReg(HTS221_HR_OUT_L_REG+1)<<8) | (uint16_t)HTS221_ReadReg(HTS221_HR_OUT_L_REG));
+/*5. Compute the RH [%] value by linear interpolation */
+tmp = ((float)(H_T_out - H0_T0_out)) * ((float)(H1_rh - H0_rh)*10);
+*value = ((tmp/(H1_T0_out - H0_T0_out) + H0_rh*10))/(-10);
+/* Saturation condition*/
+// if(*value>100) *value = 100;
+return HTS221_OK;
 }
 
 
@@ -124,7 +135,9 @@ HTS221InitData testData;
 /*End variables*/
 
 void HTS221Test(){
+
     float temperature;
+    float himidity;
 //    float temperature1 = 1.326545;
     testData.avgt = AVGT_256;
     testData.avgh = AVGH_512;
@@ -138,27 +151,27 @@ void HTS221Test(){
     testData.pp_od = 0;
     testData.drdy = 0;
 
-//    if(HAL_I2C_IsDeviceReady (&hi2c2, HTS221_ADDRESS_READ, 1, 100) == HAL_OK){
-//        printf("hts221 OK\n\r");
-//      }
-//    else{
-//        Error_Handler();
-//    }
-
-//    HTS221_ReadSetsRegister();
-//
-//    if(HTS221_INIT(&testData)){
-//        printf("no init\n\r");
-//        Error_Handler();
-//    }
+    if(noInit){
+        noInit  = 0;
+        if(HTS221_INIT(&testData)){
+            printf("no init\n\r");
+            Error_Handler();
+        }
+    }
 
     if(HTS221_Get_Temperature(&temperature)){
         printf("Error string %d\n\r",errorString);
         Error_Handler();
     }
     else{
-        printf("Temperature = %06f\n\r",temperature);
-    }
+        if (HTS221_Get_Humidity(&himidity)){
+            printf("Error string %d\n\r",errorString);
+                    Error_Handler();
+        }
+        else{
+            printf("Temperature = %06f\t Humidity = %06f\n\r",temperature, himidity);
+        }
+        }
 }
 
 /*End test*/

@@ -118,5 +118,6 @@ HTS221_Error_et HTS221_INIT(HTS221InitData *HTS221);
 void HTS221Test();
 void HTS221_ReadSetsRegister();
 HTS221_Error_et HTS221_Get_Temperature(float *value);
+HTS221_Error_et HTS221_Get_Humidity(float* value);
 
 #endif /* INC_HTS221_H_ */
