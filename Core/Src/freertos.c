@@ -135,7 +135,7 @@ void StartTask02(void const * argument)
   for(;;)
   {
       HTS221Test();
-    osDelay(10000);
+    osDelay(1000);
   }
   /* USER CODE END StartTask02 */
 }

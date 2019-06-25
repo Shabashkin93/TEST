@@ -34,6 +34,7 @@
 #include <string.h>
 #include "stm32f7xx_hal.h"
 #include <stm32f767xx.h>
+#include "lcd2004a.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -78,6 +79,7 @@ static const uint32_t aDataBuffer[BUFFER_SIZE] =
   0xdf7caf9b, 0xbfba8fd9, 0x9ff86e17, 0x7e364e55, 0x2e933eb2, 0x0ed11ef0
 };
 uint32_t uwExpectedCRCValue = 0x379E9F06;
+extern struct communicationParameters LCD_1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,7 +109,8 @@ void MX_FREERTOS_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+//    char str[40];
+//    struct communicationParameters LCD_1 = {&hi2c2, 0x27};
   /* USER CODE END 1 */
   
 
@@ -130,12 +133,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_CRC_Init();
-  MX_I2C2_Init();
   MX_USART3_UART_Init();
   MX_ETH_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
   MX_WWDG_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim6);
   HAL_TIM_Base_Start_IT(&htim6);
@@ -155,6 +158,26 @@ int main(void)
   setCurrentWaitTime(&huart3);
   printf("Wait time = %d\n\r", currentWaitTime);
   
+  /*start lcd test*/
+  LCD_ini(LCD_1);
+//  sprintf(str,"Stm32F103C8T6");
+//  LCD_String(LCD_1, str);
+//  LCD_SetCursor(LCD_1, 3, 0);
+//  sprintf(str,"ARM mc");
+//  LCD_String(LCD_1, str);
+//  HAL_Delay(2000);
+//  LCD_Clear(LCD_1);
+//  LCD_SetCursor(LCD_1, 0, 4);
+//  LCD_SendChar(LCD_1, 's');
+//  LCD_SetCursor(LCD_1, 1, 8);
+//  LCD_SendChar(LCD_1, 't');
+//  LCD_SetCursor(LCD_1, 2, 12);
+//  LCD_SendChar(LCD_1, 'm');
+//  LCD_SetCursor(LCD_1, 3, 16);
+//  LCD_SendChar(LCD_1, '3');
+//  LCD_SendChar(LCD_1, '2');
+  /*end lcd test*/
+
   HAL_UART_Receive_IT(&huart3, &modbusBuffer, 1);
 
   HTS221Test();

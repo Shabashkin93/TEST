@@ -2,10 +2,11 @@
 
 uint8_t errorString = 0;
 uint8_t noInit = 1;
+struct communicationParameters LCD_1 = {&hi2c2, 0x27};
 
 uint8_t HTS221_ReadReg(uint8_t MemAddress){
     uint8_t res=0;
-    if(HAL_I2C_Mem_Read(&hi2c2, HTS221_ADDRESS_READ, MemAddress, 1, &res, 1, 1000) == HAL_OK){
+    if(HAL_I2C_Mem_Read(&I2CNUMBER, HTS221_ADDRESS_READ, MemAddress, 1, &res, 1, 1000) == HAL_OK){
         return (res);
     }
     else{
@@ -14,7 +15,7 @@ uint8_t HTS221_ReadReg(uint8_t MemAddress){
 }
 
 HAL_StatusTypeDef HTS221_WriteReg(uint8_t MemAddress, uint8_t data){
-  return(HAL_I2C_Mem_Write(&hi2c2, HTS221_ADDRESS_WRITE, MemAddress, 1, &data, 1, 1000));
+  return(HAL_I2C_Mem_Write(&I2CNUMBER, HTS221_ADDRESS_WRITE, MemAddress, 1, &data, 1, 1000));
 }
 
 HAL_StatusTypeDef HTS221_SET_AVG(uint8_t AVGT, uint8_t AVGH){
@@ -113,7 +114,7 @@ uint16_t H0_rh, H1_rh;
 float tmp;
 /* 1. Read H0_rH and H1_rH coefficients*/
 H0_rh = HTS221_ReadReg(HTS221_H0_RH_X2)>>1;
-H1_rh = HTS221_ReadReg(HTS221_H0_RH_X2+1)>>1;
+H1_rh = HTS221_ReadReg(HTS221_H1_RH_X2)>>1;
 /*2. Read H0_T0_OUT */
 H0_T0_out = ((uint16_t)(HTS221_ReadReg(HTS221_H0_T0_OUT_L+1)<<8) | (uint16_t)HTS221_ReadReg(HTS221_H0_T0_OUT_L));
 /*3. Read H1_T0_OUT */
@@ -138,6 +139,7 @@ void HTS221Test(){
 
     float temperature;
     float himidity;
+    char str[40];
 //    float temperature1 = 1.326545;
     testData.avgt = AVGT_256;
     testData.avgh = AVGH_512;
@@ -170,6 +172,12 @@ void HTS221Test(){
         }
         else{
             printf("Temperature = %06f\t Humidity = %06f\n\r",temperature, himidity);
+            sprintf(str,"T = %06f C",temperature);
+            LCD_String(LCD_1, str);
+            LCD_SetCursor(LCD_1, 1, 0);
+            sprintf(str,"H = %06f %",himidity);
+            LCD_String(LCD_1, str);
+            LCD_SetCursor(LCD_1, 0, 0);
         }
         }
 }
