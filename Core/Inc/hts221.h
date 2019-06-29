@@ -11,7 +11,7 @@
 #include "i2c.h"
 #include <string.h>
 #include "lcd2004a.h"
-
+#include "rtc.h"
 #define I2CNUMBER hi2c2
 #define HTS221_ADDRESS_WRITE    0xBE
 #define HTS221_ADDRESS_READ     0xBF

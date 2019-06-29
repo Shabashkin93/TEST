@@ -3,6 +3,9 @@
 uint8_t errorString = 0;
 uint8_t noInit = 1;
 struct communicationParameters LCD_1 = {&hi2c2, 0x27};
+//extern RTC_HandleTypeDef hrtc;
+uint8_t aShowTime[19] = {0};
+uint8_t aShowDate[19] = {0};
 
 uint8_t HTS221_ReadReg(uint8_t MemAddress){
     uint8_t res=0;
@@ -136,11 +139,10 @@ HTS221InitData testData;
 /*End variables*/
 
 void HTS221Test(){
-
     float temperature;
     float himidity;
-    char str[40];
-//    float temperature1 = 1.326545;
+    char str[40] = {0};
+    RTC_TimeTypeDef sTime;
     testData.avgt = AVGT_256;
     testData.avgh = AVGH_512;
     testData.pd = CTRL_REG1_PD;
@@ -172,11 +174,16 @@ void HTS221Test(){
         }
         else{
             printf("Temperature = %06f\t Humidity = %06f\n\r",temperature, himidity);
-            sprintf(str,"T = %06f C",temperature);
+            sprintf(str,"T = %06f C ",temperature);
             LCD_String(LCD_1, str);
             LCD_SetCursor(LCD_1, 1, 0);
-            sprintf(str,"H = %06f %",himidity);
+            sprintf(str,"H = %06f ",himidity);
             LCD_String(LCD_1, str);
+            LCD_SetCursor(LCD_1, 2, 0);
+            RTC_CalendarShow(aShowTime, aShowDate);
+            LCD_String(LCD_1, aShowTime);
+            LCD_SetCursor(LCD_1, 3, 0);
+            LCD_String(LCD_1, aShowDate);
             LCD_SetCursor(LCD_1, 0, 0);
         }
         }
