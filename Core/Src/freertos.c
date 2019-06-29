@@ -137,7 +137,7 @@ void StartTask02(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-      HTS221Test();
+      viewLCD2004a();
     osDelay(1000);
   }
   /* USER CODE END StartTask02 */

@@ -117,7 +117,7 @@ HAL_StatusTypeDef HTS221_SET_CTRL_REG1(uint8_t pd, uint8_t rate, uint8_t bdu);
 HAL_StatusTypeDef HTS221_SET_CTRL_REG2(uint8_t boot, uint8_t heater, uint8_t one_shot);
 HAL_StatusTypeDef HTS221_SET_CTRL_REG3(uint8_t drdy_hl, uint8_t pp_od, uint8_t drdy);
 HTS221_Error_et HTS221_INIT(HTS221InitData *HTS221);
-void HTS221Test();
+void viewLCD2004a();
 void HTS221_ReadSetsRegister();
 HTS221_Error_et HTS221_Get_Temperature(float *value);
 HTS221_Error_et HTS221_Get_Humidity(float* value);

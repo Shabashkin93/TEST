@@ -138,7 +138,7 @@ return HTS221_OK;
 HTS221InitData testData;
 /*End variables*/
 
-void HTS221Test(){
+void viewLCD2004a(){
     float temperature;
     float himidity;
     char str[40] = {0};

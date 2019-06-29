@@ -162,7 +162,7 @@ int main(void)
 
   HAL_UART_Receive_IT(&huart3, &modbusBuffer, 1);
 
-  HTS221Test();
+  viewLCD2004a();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
